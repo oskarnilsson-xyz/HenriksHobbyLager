@@ -8,4 +8,10 @@
     <RootNamespace>HenriksHobbyLager</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Database\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>
