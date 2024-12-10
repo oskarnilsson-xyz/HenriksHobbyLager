@@ -7,11 +7,9 @@
     <Nullable>enable</Nullable>
     <RootNamespace>HenriksHobbyLager</RootNamespace>
   </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="Database\dummy.md" />
-    <Compile Include="Interfaces\dummy.md" />
-    <Compile Include="Models\dummy.md" />
-  </ItemGroup>
 
 </Project>
