@@ -37,7 +37,8 @@ var anka = new Product
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HenriksHobbyLager.Navigation;
+using HenriksHobbyLager;
+
 
 
 namespace RefactoringExercise
@@ -46,5 +47,7 @@ namespace RefactoringExercise
     {
         static void Main(string[] args)
         {
-            Navigation.Navigate();
+            ConsoleMenuHandler.Navigation();
         }
+    }
+}

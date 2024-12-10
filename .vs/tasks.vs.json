@@ -10,6 +10,11 @@
       "taskLabel": "task-HenriksHobbyLager",
       "appliesTo": "HenriksHobbyLager/",
       "type": "launch"
+    },
+    {
+      "taskLabel": "task-HenriksHobbyLager",
+      "appliesTo": "HenriksHobbyLager/",
+      "type": "launch"
     }
   ]
 }

@@ -1,8 +1,10 @@
 ﻿namespace HenriksHobbyLager
-     public class Navigation
+{
+     public class ConsoleMenuHandler
 
 {
-    private static void Navigation()
+    public static void Navigation()
+    { 
                 Console.Clear();  // Rensar skärmen så det ser proffsigt ut
                 Console.WriteLine("=== Henriks HobbyLager™ 1.0 ===");
                 Console.WriteLine("1. Visa alla produkter");
@@ -18,19 +20,19 @@
                 switch (choice)
                 {
                     case "1":
-                        ShowAllProducts();
+                        ConsoleMenuHandler();
                         break;
                     case "2":
-                        AddProduct();
+                        ConsoleMenuHandler();
                         break;
                     case "3":
-                        UpdateProduct();
+                        ConsoleMenuHandler();
                         break;
                     case "4":
-                        DeleteProduct();
+                        ConsoleMenuHandler();
                         break;
                     case "5":
-                        SearchProducts();
+                        ConsoleMenuHandler();
                         break;
                     case "6":
                         return;  // OBS! All data försvinner om du väljer denna!
