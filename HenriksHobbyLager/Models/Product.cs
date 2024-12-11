@@ -5,7 +5,6 @@ namespace HenriksHobbyLager.Models
 {
     public class Product
     {
-        internal readonly object LastUpdated;
 
         public int Id { get; set; }
         public required string Name { get; set; }
@@ -15,5 +14,6 @@ namespace HenriksHobbyLager.Models
 
         public string? DateCreated { get; set; }
         public string? DateUpdated { get; set; }
+        public object? LastUpdated { get; internal set; }
     }
 }

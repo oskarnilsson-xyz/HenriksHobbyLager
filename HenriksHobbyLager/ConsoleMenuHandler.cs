@@ -7,16 +7,16 @@ namespace HenriksHobbyLager
     
 public class ConsoleMenuHandler
     {
-        private static IProductFacade _productFacade;
+        private readonly IProductFacade _productFacade;
 
         public ConsoleMenuHandler(IProductFacade productFacade)
         {
-            _productFacade = productFacade;
+            _productFacade = productFacade ?? throw new ArgumentNullException(nameof(productFacade));
         }
 
-        public static void Navigation()
+        public void Navigation()
         {
-            Console.Clear();  // Rensar skärmen så det ser proffsigt ut
+            //Console.Clear();  // Rensar skärmen så det ser proffsigt ut
             Console.WriteLine("=== Henriks HobbyLager™ 1.0 ===");
             Console.WriteLine("1. Visa alla produkter");
             Console.WriteLine("2. Lägg till produkt");
@@ -57,7 +57,7 @@ public class ConsoleMenuHandler
         }
 
         // Visar alla produkter som finns i "databasen"
-        private static void ShowAllProducts()
+        private void ShowAllProducts()
         {
             var products = _productFacade.GetAllProducts();
             if (!products.Any())
@@ -73,7 +73,7 @@ public class ConsoleMenuHandler
         }
 
         // Lägger till en ny produkt i systemet
-        private static void AddProduct()
+        private void AddProduct()
         {
             Console.WriteLine("=== Lägg till ny produkt ===");
 
@@ -115,7 +115,7 @@ public class ConsoleMenuHandler
         }
 
         // Uppdaterar en befintlig produkt
-        private static void UpdateProduct()
+        private void UpdateProduct()
         {
             Console.Write("Ange produkt-ID att uppdatera (finns i listan ovan): ");
             if (!int.TryParse(Console.ReadLine(), out int id))
@@ -151,11 +151,12 @@ public class ConsoleMenuHandler
             if (!string.IsNullOrWhiteSpace(category))
                 product.Category = category;
 
+
             Console.WriteLine("Produkt uppdaterad! Stäng fortfarande inte av datorn!");
         }
 
         // Ta bort en produkt (använd med försiktighet!)
-        private static void DeleteProduct()
+        private void DeleteProduct()
         {
             Console.Write("Ange produkt-ID att ta bort (dubbel-check att det är rätt, går inte att ångra!): ");
             if (!int.TryParse(Console.ReadLine(), out int id))
@@ -176,7 +177,7 @@ public class ConsoleMenuHandler
         }
 
         // Sökfunktion - Min stolthet! Söker i både namn och kategori
-        private static void SearchProducts()
+        private void SearchProducts()
         {
             Console.Write("Sök (namn eller kategori - versaler spelar ingen roll!): ");
             var searchTerm = Console.ReadLine().ToLower();
@@ -195,7 +196,7 @@ public class ConsoleMenuHandler
         }
 
         // Visar en enskild produkt snyggt formaterat
-        private static void DisplayProduct(Product product)
+        private void DisplayProduct(Product product)
         {
             Console.WriteLine($"\nID: {product.Id}");
             Console.WriteLine($"Namn: {product.Name}");

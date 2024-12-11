@@ -1,13 +1,10 @@
 ﻿using HenriksHobbyLager.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Data.Sqlite;
 namespace HenriksHobbyLager.Models
 {
     public class ProductRepository : IRepository<Product>
     {
-        private readonly string _connectionString = @"\HenriksHobbyLager\Database\HenriksHobbyLager.db";
+        private readonly string _connectionString;
 
         public ProductRepository(string connectionString)
         {
@@ -55,6 +52,8 @@ namespace HenriksHobbyLager.Models
         {
             using (var connection = new SqliteConnection(_connectionString))
             {
+
+
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText =
@@ -80,6 +79,7 @@ namespace HenriksHobbyLager.Models
                 }
             }
         }
+
 
         public Product GetById(int id)
         {
