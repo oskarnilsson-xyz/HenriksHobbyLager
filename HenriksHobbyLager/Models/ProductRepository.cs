@@ -7,7 +7,7 @@ namespace HenriksHobbyLager.Models
 {
     public class ProductRepository : IRepository<Product>
     {
-        private readonly string _connectionString;
+        private readonly string _connectionString = @"\HenriksHobbyLager\Database\HenriksHobbyLager.db";
 
         public ProductRepository(string connectionString)
         {

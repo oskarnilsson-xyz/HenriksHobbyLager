@@ -5,6 +5,8 @@ namespace HenriksHobbyLager.Models
 {
     public class Product
     {
+        internal readonly object LastUpdated;
+
         public int Id { get; set; }
         public required string Name { get; set; }
         public float Price { get; set; }
