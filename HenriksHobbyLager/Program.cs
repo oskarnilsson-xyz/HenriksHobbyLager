@@ -36,18 +36,27 @@ var anka = new Product
 */
 using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using HenriksHobbyLager;
+using HenriksHobbyLager.Facade;
+using HenriksHobbyLager.Repository;
 
-
+//TODO: Fixa så databasen skapas av programmet om den inte finns.
 
 namespace RefactoringExercise
 {
     class Program
     {
+
         static void Main(string[] args)
         {
-            ConsoleMenuHandler.Navigation();
+            var connectionString = @"Data Source=.\HenriksHobbyLager.db"; //Relativ path till databasfilen
+            var productRepository = new ProductRepository(connectionString); 
+            productRepository.InitDatabase(connectionString);
+            var productFacade = new ProductFacade(productRepository);
+            var consoleMenuHandler = new ConsoleMenuHandler(productFacade);         
+
+            consoleMenuHandler.Navigation();
         }
     }
 }

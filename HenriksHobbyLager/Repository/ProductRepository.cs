@@ -1,9 +1,7 @@
 ﻿using HenriksHobbyLager.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using HenriksHobbyLager.Models;
 using Microsoft.Data.Sqlite;
-namespace HenriksHobbyLager.Models
+namespace HenriksHobbyLager.Repository
 {
     public class ProductRepository : IRepository<Product>
     {
@@ -12,6 +10,57 @@ namespace HenriksHobbyLager.Models
         public ProductRepository(string connectionString)
         {
             _connectionString = connectionString;
+        }
+
+        //Initiera SQLite File Databas och skapa en trigger för att uppdatera dateUpdated
+        public void InitDatabase(string connectionString)
+        {
+            using (var connection = new SqliteConnection(connectionString))
+            {
+
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText =
+                @"
+                    CREATE TABLE IF NOT EXISTS Lager (
+                        id INTEGER NOT NULL UNIQUE,
+                        name TEXT NOT NULL UNIQUE,
+                        price NUMERIC NOT NULL DEFAULT 0,
+                        stock INTEGER NOT NULL DEFAULT 0,
+                        category TEXT NOT NULL DEFAULT 'misc',
+                        dateCreated TEXT NOT NULL DEFAULT (DATE('now')),
+                        dateUpdated TEXT NOT NULL DEFAULT (DATE('now')),
+                        PRIMARY KEY(id AUTOINCREMENT)
+                    );
+
+                    CREATE TRIGGER IF NOT EXISTS update_dateUpdated
+                    AFTER UPDATE ON Lager
+                    FOR EACH ROW
+                    WHEN OLD.name != NEW.name OR OLD.price != NEW.price OR OLD.stock != NEW.stock OR OLD.category != NEW.category
+                    BEGIN
+                        UPDATE Lager
+                        SET dateUpdated = DATE('now')
+                        WHERE id = OLD.id;
+                    END;
+                ";
+                command.ExecuteNonQuery();
+            }
+
+
+            if (File.Exists(new SqliteConnectionStringBuilder(connectionString).DataSource)) //Omvandra conectionsString till en path
+            {
+                Console.WriteLine("Databas hittad!");
+                Thread.Sleep(2000);
+                return;
+            }
+            else
+            {
+                Console.WriteLine("Databas saknas och gick inte att skapa, kontakta admin.");
+                Console.WriteLine("Tryck på en tangent för att avsluta...");
+                Console.ReadKey();
+                Environment.Exit(1);
+            }
+
         }
         //Metoder för att hantera CRUD-operationer
         public void Add(Product entity)
@@ -27,7 +76,7 @@ namespace HenriksHobbyLager.Models
                         VALUES ($name, $price, $stock, $category)
                     ";
                 command.Parameters.AddWithValue("$name", entity.Name);
-                command.Parameters.AddWithValue("$price", entity.Price != 0 ? (object)entity.Price : DBNull.Value);
+                command.Parameters.AddWithValue("$price", entity.Price != 0 ? entity.Price : DBNull.Value);
                 command.Parameters.AddWithValue("$stock", entity.Stock ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$category", entity.Category ?? (object)DBNull.Value);
 
@@ -55,6 +104,8 @@ namespace HenriksHobbyLager.Models
         {
             using (var connection = new SqliteConnection(_connectionString))
             {
+
+
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText =
@@ -71,15 +122,16 @@ namespace HenriksHobbyLager.Models
                             Id = reader.GetInt32(0),
                             Name = reader.GetString(1),
                             Price = reader.GetFloat(2),
-                            Stock = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
+                            Stock = reader.IsDBNull(3) ? null : reader.GetInt32(3),
                             Category = reader.IsDBNull(4) ? null : reader.GetString(4),
-                            DateCreated = reader.GetDateTime(5).ToString("yyyy-MM-dd HH:mm:ss"),
-                            DateUpdated = reader.GetDateTime(6).ToString("yyyy-MM-dd HH:mm:ss")
+                            DateCreated = reader.GetDateTime(5).ToString("yyyy-MM-dd"),
+                            DateUpdated = reader.GetDateTime(6).ToString("yyyy-MM-dd")
                         };
                     }
                 }
             }
         }
+
 
         public Product GetById(int id)
         {
@@ -103,7 +155,7 @@ namespace HenriksHobbyLager.Models
                             Id = reader.GetInt32(0),
                             Name = reader.GetString(1),
                             Price = reader.GetFloat(2),
-                            Stock = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
+                            Stock = reader.IsDBNull(3) ? null : reader.GetInt32(3),
                             Category = reader.IsDBNull(4) ? null : reader.GetString(4),
                             DateCreated = reader.GetDateTime(5).ToString("yyyy-MM-dd HH:mm:ss"),
                             DateUpdated = reader.GetDateTime(6).ToString("yyyy-MM-dd HH:mm:ss")
@@ -132,7 +184,7 @@ namespace HenriksHobbyLager.Models
                         WHERE id = $id
                     ";
                 command.Parameters.AddWithValue("$name", entity.Name);
-                command.Parameters.AddWithValue("$price", entity.Price != 0 ? (object)entity.Price : DBNull.Value);
+                command.Parameters.AddWithValue("$price", entity.Price != 0 ? entity.Price : DBNull.Value);
                 command.Parameters.AddWithValue("$stock", entity.Stock ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$category", entity.Category ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$id", entity.Id);

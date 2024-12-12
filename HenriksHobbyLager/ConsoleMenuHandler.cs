@@ -1,209 +1,249 @@
-﻿namespace HenriksHobbyLager
-{
-     public class ConsoleMenuHandler
+﻿
+using HenriksHobbyLager.Interfaces;
+using HenriksHobbyLager.Models;
 
+
+//Det finns nog mkt kod  att optimera i funktionerna där Console.ReadLine() används
+namespace HenriksHobbyLager
 {
-    public static void Navigation()
-    { 
-                Console.Clear();  // Rensar skärmen så det ser proffsigt ut
-                Console.WriteLine("=== Henriks HobbyLager™ 1.0 ===");
+    
+public class ConsoleMenuHandler
+    {
+        private readonly IProductFacade _productFacade;
+
+        public ConsoleMenuHandler(IProductFacade productFacade)
+        {
+            _productFacade = productFacade ?? throw new ArgumentNullException(nameof(productFacade));
+        }
+
+        public void Navigation()
+        {
+            while (true)
+            {
+
+                Console.Clear();
+                Console.WriteLine("=== Henriks HobbyLager™ 2.0 ===");
                 Console.WriteLine("1. Visa alla produkter");
                 Console.WriteLine("2. Lägg till produkt");
                 Console.WriteLine("3. Uppdatera produkt");
                 Console.WriteLine("4. Ta bort produkt");
                 Console.WriteLine("5. Sök produkter");
-                Console.WriteLine("6. Avsluta");  // Använd inte denna om du vill behålla datan!
-                
+                Console.WriteLine("6. Avsluta");
+
                 var choice = Console.ReadLine();
 
-                // Switch är tydligen bättre än if-else enligt Google
+
                 switch (choice)
                 {
                     case "1":
-                        ConsoleMenuHandler();
+                        ShowAllProducts();
                         break;
                     case "2":
-                        ConsoleMenuHandler();
+                        AddProduct();
                         break;
                     case "3":
-                        ConsoleMenuHandler();
+                        UpdateProduct();
                         break;
                     case "4":
-                        ConsoleMenuHandler();
+                        DeleteProduct();
                         break;
                     case "5":
-                        ConsoleMenuHandler();
+                        SearchProducts();
                         break;
                     case "6":
-                        return;  // OBS! All data försvinner om du väljer denna!
+                        return;
                     default:
-                        Console.WriteLine("Ogiltigt val! Är du säker på att du tryckte på rätt knapp?");
+                        Console.WriteLine("Ogiltigt val!");
                         break;
                 }
 
-Console.WriteLine("\nTryck på valfri tangent för att fortsätta... (helst inte ESC)");
-Console.ReadKey();
+                Console.WriteLine("\nTryck på valfri tangent för att fortsätta...");
+                Console.ReadKey();
+            }
+        }
+
+        // Visar alla produkter som finns i databasen
+        private void ShowAllProducts()
+        {
+            var products = _productFacade.GetAllProducts();
+            if (!products.Any())
+            {
+                Console.WriteLine("Inga produkter finns i lagret.");
+                return;
+            }
+            Console.Clear();
+            //Table!
+            Console.WriteLine("{0,-5} {1,-20} {2,-10} {3,-10} {4,-15} {5,-20} {6,-20}", "ID", "Namn", "Pris", "Lager", "Kategori", "Skapad", "Senast uppdaterad");
+            Console.WriteLine(new string('-', 100));
+
+            foreach (var product in products)
+            {
+                Console.WriteLine("{0,-5} {1,-20} {2,-10:C} {3,-10} {4,-15} {5,-20} {6,-20}",
+                    product.Id,
+                    product.Name,
+                    product.Price,
+                    product.Stock,
+                    product.Category,
+                    product.DateCreated,
+                    product.DateUpdated);
+            }
+        }
+
+        // Lägger till en ny produkt i systemet
+        private void AddProduct()
+        {
+            Console.WriteLine("=== Lägg till ny produkt ===");
+
+            Console.Write("Namn: ");
+            string? name = Console.ReadLine();
+            if (string.IsNullOrEmpty(name))
+            {
+                Console.WriteLine("Ogiltigt namn! Försök igen.");
+                return;
             }
 
+            //Om inget anges sätts priset till 0, vill ha det i databasen som default värde om jag kan lista ut det.
+            Console.Write("Pris: ");
+            var priceInput = Console.ReadLine()?.Replace(',', '.'); // Används för att hantera svenska decimaler
+            decimal? price = null;
+            if (!string.IsNullOrWhiteSpace(priceInput))
+            {
+                if (!decimal.TryParse(priceInput, out decimal parsedPrice))
+                {
+                    Console.WriteLine("Ogiltigt pris!");
+                    return;
+                }
+                price = parsedPrice;
+            }
+            // Möjligt att sätta lager till null om inget anges, db har default värde
+            Console.Write("Antal i lager: ");
+            var stockInput = Console.ReadLine();
+            int? stock = null;
+            if (!string.IsNullOrWhiteSpace(stockInput))
+            {
+                if (!int.TryParse(stockInput, out int parsedStock))
+                {
+                    Console.WriteLine("Endast heltal.");
+                    return;
+                }
+                stock = parsedStock;
+            }
 
-// Visar alla produkter som finns i "databasen"
-private static void ShowAllProducts()
-{
-    // Kollar om det finns några produkter alls
-    // !_products.Any() låter mer proffsigt än _products.Count == 0
-    if (!_products.Any())
-    {
-        Console.WriteLine("Inga produkter finns i lagret. Dags att shoppa grossist!");
-        return;
-    }
+            //Null värde ger misc i databasen med default värde
+            Console.Write("Kategori: ");
+            var category = Console.ReadLine();
 
-    foreach (var product in _products)
-    {
-        DisplayProduct(product);
-    }
-}
+            var product = new Product
+            {
+                Name = name,
+                Price = (float)(price ?? 0), //TODO: Vill att denna ska kunna vara null om
+                                             //inget pris anges för att reducera mängden kod(databasen har ett default värde)
+                                             //Kanske flytta var casten händer?
+                Stock = stock,
+                Category = category,
+            };
 
-// Lägger till en ny produkt i systemet
-private static void AddProduct()
-{
-    Console.WriteLine("=== Lägg till ny produkt ===");
+            _productFacade.AddProduct(product);
+            Console.WriteLine("Produkt tillagd!");
+        }
 
-    Console.Write("Namn: ");
-    var name = Console.ReadLine();
+        // Uppdaterar en befintlig produkt
+        private void UpdateProduct()
+        {
+            ShowAllProducts();
+            Console.Write("Ange produkt-ID att uppdatera: ");
+            if (!int.TryParse(Console.ReadLine(), out int id))
+            {
+                Console.WriteLine("Ogiltigt ID!");
+                return;
+            }
 
-    Console.Write("Pris: ");
-    if (!decimal.TryParse(Console.ReadLine(), out decimal price))
-    {
-        Console.WriteLine("Ogiltigt pris! Använd punkt istället för komma (lärde mig den hårda vägen)");
-        return;
-    }
+            var product = _productFacade.GetProductById(id);
+            if (product == null)
+            {
+                Console.WriteLine("Produkt hittades inte!");
+                return;
+            }
 
-    Console.Write("Antal i lager: ");
-    if (!int.TryParse(Console.ReadLine(), out int stock))
-    {
-        Console.WriteLine("Ogiltig lagermängd! Hela tal endast (kan inte sälja halva helikoptrar)");
-        return;
-    }
+            Console.Write("Nytt namn eller tryck Enter för att behålla gamla: ");
+            var name = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(name))
+                product.Name = name;
 
-    Console.Write("Kategori: ");
-    var category = Console.ReadLine();
+            Console.Write("Nytt pris eller tryck Enter för att behålla gamla: ");
+            var priceInput = Console.ReadLine()?.Replace(',', '.');
+            if (!string.IsNullOrWhiteSpace(priceInput) && decimal.TryParse(priceInput, out decimal price))
+                product.Price = (float)price;
 
-    // Skapar produkten - Id räknas upp automatiskt så vi slipper hålla reda på det
-    var product = new Product
-    {
-        Id = _nextId++,  // Plussar på direkt, smart va?
-        Name = name,
-        Price = price,
-        Stock = stock,
-        Category = category,
-        Created = DateTime.Now  // Automatiskt datum, smooth!
-    };
+            Console.Write("Ny lagermängd eller tryck Enter för att behålla gamla: ");
+            var stockInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(stockInput) && int.TryParse(stockInput, out int stock))
+                product.Stock = stock;
 
-    _products.Add(product);
-    Console.WriteLine("Produkt tillagd! Glöm inte att hålla datorn igång!");
-}
+            Console.Write("Ny kategori eller tryck Enter för att behålla gamla: ");
+            var category = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(category))
+                product.Category = category;
 
-// Uppdaterar en befintlig produkt
-private static void UpdateProduct()
-{
-    Console.Write("Ange produkt-ID att uppdatera (finns i listan ovan): ");
-    if (!int.TryParse(Console.ReadLine(), out int id))
-    {
-        Console.WriteLine("Ogiltigt ID! Bara siffror tack!");
-        return;
-    }
 
-    // LINQ - Google säger att det är snabbt
-    var product = _products.FirstOrDefault(p => p.Id == id);
-    if (product == null)
-    {
-        Console.WriteLine("Produkt hittades inte! Är du säker på att du skrev rätt?");
-        return;
-    }
+            Console.WriteLine("Produkt uppdaterad!");
+        }
 
-    // Uppdatera bara det som användaren faktiskt skriver in
-    Console.Write("Nytt namn (tryck bara enter om du vill behålla det gamla): ");
-    var name = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(name))
-        product.Name = name;
+        // Ta bort en produkt
+        private void DeleteProduct()
+        {
+            ShowAllProducts();
+            Console.Write("Ange produkt-ID att tabort: ");
+            if (!int.TryParse(Console.ReadLine(), out int id))
+            {
+                Console.WriteLine("Ogiltigt ID!");
+                return;
+            }
 
-    Console.Write("Nytt pris (tryck bara enter om du vill behålla det gamla): ");
-    var priceInput = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(priceInput) && decimal.TryParse(priceInput, out decimal price))
-        product.Price = price;
+            var product = _productFacade.GetProductById(id);
+            if (product == null)
+            {
+                Console.WriteLine("Produkt hittades inte!");
+                return;
+            }
 
-    Console.Write("Ny lagermängd (tryck bara enter om du vill behålla den gamla): ");
-    var stockInput = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(stockInput) && int.TryParse(stockInput, out int stock))
-        product.Stock = stock;
+            _productFacade.RemoveProduct(product);
+            Console.WriteLine("Produkt borttagen!");
+        }
 
-    Console.Write("Ny kategori (tryck bara enter om du vill behålla den gamla): ");
-    var category = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(category))
-        product.Category = category;
+        // Sökfunktion
+        private void SearchProducts()
+        {
+            Console.Write("Sök på namn eller kategori: ");
+            string? searchTerm = Console.ReadLine()?.ToLower();
 
-    product.LastUpdated = DateTime.Now;  // Håller koll på när saker ändras
-    Console.WriteLine("Produkt uppdaterad! Stäng fortfarande inte av datorn!");
-}
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                Console.WriteLine("Ogiltigt sökterm!");
+                return;
+            }
 
-// Ta bort en produkt (använd med försiktighet!)
-private static void DeleteProduct()
-{
-    Console.Write("Ange produkt-ID att ta bort (dubbel-check att det är rätt, går inte att ångra!): ");
-    if (!int.TryParse(Console.ReadLine(), out int id))
-    {
-        Console.WriteLine("Ogiltigt ID! Bara siffror är tillåtna här.");
-        return;
-    }
+            var results = _productFacade.SearchProducts(searchTerm).ToList();
+            if (!results.Any())
+            {
+                Console.WriteLine("Inga produkter matchade sökningen.");
+                return;
+            }
 
-    var product = _products.FirstOrDefault(p => p.Id == id);
-    if (product == null)
-    {
-        Console.WriteLine("Produkt hittades inte! Puh, inget blev raderat av misstag!");
-        return;
-    }
+            results.ForEach(DisplayProduct);
+        }
 
-    _products.Remove(product);
-    Console.WriteLine("Produkt borttagen! (Hoppas det var meningen)");
-}
-
-// Sökfunktion - Min stolthet! Söker i både namn och kategori
-private static void SearchProducts()
-{
-    Console.Write("Sök (namn eller kategori - versaler spelar ingen roll!): ");
-    var searchTerm = Console.ReadLine().ToLower();
-
-    // LINQ igen! Kollar både namn och kategori
-    var results = _products.Where(p =>
-        p.Name.ToLower().Contains(searchTerm) ||
-        p.Category.ToLower().Contains(searchTerm)
-    ).ToList();
-
-    if (!results.Any())
-    {
-        Console.WriteLine("Inga produkter matchade sökningen. Prova med något annat!");
-        return;
-    }
-
-    foreach (var product in results)
-    {
-        DisplayProduct(product);
-    }
-}
-
-// Visar en enskild produkt snyggt formaterat
-private static void DisplayProduct(Product product)
-{
-    // Snygga streck som separerar produkterna
-    Console.WriteLine($"\nID: {product.Id}");
-    Console.WriteLine($"Namn: {product.Name}");
-    Console.WriteLine($"Pris: {product.Price:C}");  // :C gör att det blir kronor automatiskt!
-    Console.WriteLine($"Lager: {product.Stock}");
-    Console.WriteLine($"Kategori: {product.Category}");
-    Console.WriteLine($"Skapad: {product.Created}");
-    if (product.LastUpdated.HasValue)  // Kollar om produkten har uppdaterats någon gång
-        Console.WriteLine($"Senast uppdaterad: {product.LastUpdated}");
-    Console.WriteLine(new string('-', 40));  // Snyggt streck mellan produkterna
-}
+        // Visar en enskild produkt snyggt formaterat
+        private void DisplayProduct(Product product)
+        {
+            Console.WriteLine($"\nID: {product.Id}");
+            Console.WriteLine($"Namn: {product.Name}");
+            Console.WriteLine($"Pris: {product.Price:C}");
+            Console.WriteLine($"Lager: {product.Stock}");
+            Console.WriteLine($"Kategori: {product.Category}");
+            Console.WriteLine($"Skapad: {product.DateCreated}");
+            Console.WriteLine($"Senast uppdaterad: {product.DateUpdated}");
+            Console.WriteLine(new string('-', 40));
+        }
     }
         }
