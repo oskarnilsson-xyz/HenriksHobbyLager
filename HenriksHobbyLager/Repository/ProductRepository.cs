@@ -13,6 +13,7 @@ namespace HenriksHobbyLager.Repository
         }
 
         //Initiera SQLite File Databas och skapa en trigger för att uppdatera dateUpdated
+        //Denna kan inte användas av andra repos!!!
         public void InitDatabase(string connectionString)
         {
             using (var connection = new SqliteConnection(connectionString))
@@ -43,7 +44,7 @@ namespace HenriksHobbyLager.Repository
                         WHERE id = OLD.id;
                     END;
                 ";
-                command.ExecuteNonQuery();
+                command.ExecuteNonQuery(); //TODO: Kolla date för att få klockslag också
             }
 
 
@@ -51,7 +52,6 @@ namespace HenriksHobbyLager.Repository
             {
                 Console.WriteLine("Databas hittad!");
                 Thread.Sleep(2000);
-                return;
             }
             else
             {
@@ -161,12 +161,16 @@ namespace HenriksHobbyLager.Repository
                             DateUpdated = reader.GetDateTime(6).ToString("yyyy-MM-dd HH:mm:ss")
                         };
                     }
+                    else
+                    {
+                        return null;
+                    }
                 }
+
             }
-            return null;
         }
 
-        public IEnumerable<Product> Search(Func<Product, bool> predicate)
+        public IEnumerable<Product> Search(Func<Product, bool> predicate)  //kolla mer på hur detta funkar
         {
             return GetAll().Where(predicate);
         }

@@ -37,18 +37,17 @@ var anka = new Product
 using System;
 using System.Collections.Generic;
 
-using HenriksHobbyLager;
 using HenriksHobbyLager.Facade;
 using HenriksHobbyLager.Repository;
 
 //TODO: Fixa så databasen skapas av programmet om den inte finns.
 
-namespace RefactoringExercise
+namespace HenriksHobbyLager
 {
     class Program
     {
 
-        static void Main(string[] args)
+        static void Main()
         {
             var connectionString = @"Data Source=.\HenriksHobbyLager.db"; //Relativ path till databasfilen
             var productRepository = new ProductRepository(connectionString); 

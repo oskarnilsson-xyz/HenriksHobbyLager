@@ -1,20 +1,17 @@
 ﻿
 using HenriksHobbyLager.Interfaces;
 using HenriksHobbyLager.Models;
+using System.Globalization;
 
 
-//Det finns nog mkt kod  att optimera i funktionerna där Console.ReadLine() används
+
+//Det finns nog mkt kod  att optimera i funktionerna där Console.ReadLine() används + Flytta ut funktioner till andra klasser
 namespace HenriksHobbyLager
 {
-    
-public class ConsoleMenuHandler
-    {
-        private readonly IProductFacade _productFacade;
 
-        public ConsoleMenuHandler(IProductFacade productFacade)
-        {
-            _productFacade = productFacade ?? throw new ArgumentNullException(nameof(productFacade));
-        }
+    public class ConsoleMenuHandler(IProductFacade productFacade)
+    {
+        private readonly IProductFacade _productFacade = productFacade ?? throw new ArgumentNullException(nameof(productFacade));
 
         public void Navigation()
         {
@@ -29,11 +26,12 @@ public class ConsoleMenuHandler
                 Console.WriteLine("4. Ta bort produkt");
                 Console.WriteLine("5. Sök produkter");
                 Console.WriteLine("6. Avsluta");
+                Console.WriteLine("\n0. Import från Henriks HobbyLager™ 1.0");
 
-                var choice = Console.ReadLine();
 
 
-                switch (choice)
+
+                switch (Console.ReadLine())
                 {
                     case "1":
                         ShowAllProducts();
@@ -52,6 +50,9 @@ public class ConsoleMenuHandler
                         break;
                     case "6":
                         return;
+                    case "0":
+                        ImportFromOldProgram();
+                        break;
                     default:
                         Console.WriteLine("Ogiltigt val!");
                         break;
@@ -69,7 +70,7 @@ public class ConsoleMenuHandler
             if (!products.Any())
             {
                 Console.WriteLine("Inga produkter finns i lagret.");
-                return;
+                return;  //Potential för att tabort en return med if else
             }
             Console.Clear();
             //Table!
@@ -94,7 +95,7 @@ public class ConsoleMenuHandler
         {
             Console.WriteLine("=== Lägg till ny produkt ===");
 
-            Console.Write("Namn: ");
+            Console.Write("Namn: ");  // Kan plocka ut Write/Read till en egen funktion för att reducera kod.
             string? name = Console.ReadLine();
             if (string.IsNullOrEmpty(name))
             {
@@ -105,7 +106,7 @@ public class ConsoleMenuHandler
             //Om inget anges sätts priset till 0, vill ha det i databasen som default värde om jag kan lista ut det.
             Console.Write("Pris: ");
             var priceInput = Console.ReadLine()?.Replace(',', '.'); // Används för att hantera svenska decimaler
-            decimal? price = null;
+            decimal? price = null; //---Kan vi byta till float?--- Tillåt null för att priset inte ska "få vara 0"
             if (!string.IsNullOrWhiteSpace(priceInput))
             {
                 if (!decimal.TryParse(priceInput, out decimal parsedPrice))
@@ -164,7 +165,8 @@ public class ConsoleMenuHandler
                 Console.WriteLine("Produkt hittades inte!");
                 return;
             }
-
+            //Kolla på {} https://www.reddit.com/r/programming/comments/1z65j2/reflections_on_curly_braces_apples_ssl_bug_and/?rdt=46866
+            //Kolla på att flytta ut repititiv kod till en egen funktion
             Console.Write("Nytt namn eller tryck Enter för att behålla gamla: ");
             var name = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(name))
@@ -172,7 +174,7 @@ public class ConsoleMenuHandler
 
             Console.Write("Nytt pris eller tryck Enter för att behålla gamla: ");
             var priceInput = Console.ReadLine()?.Replace(',', '.');
-            if (!string.IsNullOrWhiteSpace(priceInput) && decimal.TryParse(priceInput, out decimal price))
+            if (!string.IsNullOrWhiteSpace(priceInput) && decimal.TryParse(priceInput, out decimal price)) // kan vi bättre än string.isnullorwhitespace?
                 product.Price = (float)price;
 
             Console.Write("Ny lagermängd eller tryck Enter för att behålla gamla: ");
@@ -186,7 +188,7 @@ public class ConsoleMenuHandler
                 product.Category = category;
 
 
-            Console.WriteLine("Produkt uppdaterad!");
+            Console.WriteLine("Produkt uppdaterad!"); //BUGGGGG ny info skickas inte till databasen
         }
 
         // Ta bort en produkt
@@ -194,13 +196,13 @@ public class ConsoleMenuHandler
         {
             ShowAllProducts();
             Console.Write("Ange produkt-ID att tabort: ");
-            if (!int.TryParse(Console.ReadLine(), out int id))
+            if (!int.TryParse(Console.ReadLine(), out int id))  //Baka ihop med update i egen funktion 
             {
                 Console.WriteLine("Ogiltigt ID!");
                 return;
             }
 
-            var product = _productFacade.GetProductById(id);
+            var product = _productFacade.GetProductById(id);//Baka ihop med update i egen funktion 
             if (product == null)
             {
                 Console.WriteLine("Produkt hittades inte!");
@@ -233,8 +235,8 @@ public class ConsoleMenuHandler
             results.ForEach(DisplayProduct);
         }
 
-        // Visar en enskild produkt snyggt formaterat
-        private void DisplayProduct(Product product)
+        // Visar en enskild produkt -- Kolla på hur många svar och välj tabell om det är många
+        private void DisplayProduct(Product product) 
         {
             Console.WriteLine($"\nID: {product.Id}");
             Console.WriteLine($"Namn: {product.Name}");
@@ -245,5 +247,58 @@ public class ConsoleMenuHandler
             Console.WriteLine($"Senast uppdaterad: {product.DateUpdated}");
             Console.WriteLine(new string('-', 40));
         }
-    }
+        public List<Product> ImportFromOldProgram()  //Extraordinärt mkt i denna funktion är Copilot genererat.
+        {
+            Console.WriteLine("Klistra in innehållet från visa allt och tryck Enter:");
+            var dataImport = Console.ReadLine(); //läs en textfil med datan
+            var products = new List<Product>();
+            var productBlocks = dataImport.Split(new string[] { "----------------------------------------" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var block in productBlocks)
+            {
+                var product = new Product { Name = string.Empty }; // Fixar så att det inte blir null exception
+                var lines = block.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var line in lines)
+                {
+                    var parts = line.Split(new[] { ':' }, 2);
+                    if (parts.Length < 2) continue;
+
+                    var key = parts[0].Trim();
+                    var value = parts[1].Trim();
+
+                    switch (key)
+                    {
+                        case "ID":
+                            product.Id = int.Parse(value);
+                            break;
+                        case "Namn":
+                            product.Name = value;
+                            break;
+                        case "Pris":
+                            product.Price = float.Parse(value.Replace("kr", "").Trim(), CultureInfo.InvariantCulture);
+                            break;
+                        case "Lager":
+                            product.Stock = int.Parse(value);
+                            break;
+                        case "Kategori":
+                            product.Category = value;
+                            break;
+                        case "Skapad":
+                            product.DateCreated = value;
+                            break;
+                        case "Senast uppdaterad":
+                            product.DateUpdated = value;
+                            break;
+                    }
+                }
+
+                products.Add(product);
+            }
+
+            return products;
         }
+        
+
+    }
+}
