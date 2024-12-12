@@ -2,6 +2,8 @@
 using HenriksHobbyLager.Interfaces;
 using HenriksHobbyLager.Models;
 
+
+//Det finns nog mkt kod  att optimera i funktionerna där Console.ReadLine() används
 namespace HenriksHobbyLager
 {
     
@@ -16,59 +18,74 @@ public class ConsoleMenuHandler
 
         public void Navigation()
         {
-            //Console.Clear();  // Rensar skärmen så det ser proffsigt ut
-            Console.WriteLine("=== Henriks HobbyLager™ 1.0 ===");
-            Console.WriteLine("1. Visa alla produkter");
-            Console.WriteLine("2. Lägg till produkt");
-            Console.WriteLine("3. Uppdatera produkt");
-            Console.WriteLine("4. Ta bort produkt");
-            Console.WriteLine("5. Sök produkter");
-            Console.WriteLine("6. Avsluta");  // Använd inte denna om du vill behålla datan!
-
-            var choice = Console.ReadLine();
-
-            // Switch är tydligen bättre än if-else enligt Google
-            switch (choice)
+            while (true)
             {
-                case "1":
-                    ShowAllProducts();
-                    break;
-                case "2":
-                    AddProduct();
-                    break;
-                case "3":
-                    UpdateProduct();
-                    break;
-                case "4":
-                    DeleteProduct();
-                    break;
-                case "5":
-                    SearchProducts();
-                    break;
-                case "6":
-                    return;  // OBS! All data försvinner om du väljer denna!
-                default:
-                    Console.WriteLine("Ogiltigt val! Är du säker på att du tryckte på rätt knapp?");
-                    break;
-            }
 
-            Console.WriteLine("\nTryck på valfri tangent för att fortsätta... (helst inte ESC)");
-            Console.ReadKey();
+                Console.Clear();
+                Console.WriteLine("=== Henriks HobbyLager™ 2.0 ===");
+                Console.WriteLine("1. Visa alla produkter");
+                Console.WriteLine("2. Lägg till produkt");
+                Console.WriteLine("3. Uppdatera produkt");
+                Console.WriteLine("4. Ta bort produkt");
+                Console.WriteLine("5. Sök produkter");
+                Console.WriteLine("6. Avsluta");
+
+                var choice = Console.ReadLine();
+
+
+                switch (choice)
+                {
+                    case "1":
+                        ShowAllProducts();
+                        break;
+                    case "2":
+                        AddProduct();
+                        break;
+                    case "3":
+                        UpdateProduct();
+                        break;
+                    case "4":
+                        DeleteProduct();
+                        break;
+                    case "5":
+                        SearchProducts();
+                        break;
+                    case "6":
+                        return;
+                    default:
+                        Console.WriteLine("Ogiltigt val!");
+                        break;
+                }
+
+                Console.WriteLine("\nTryck på valfri tangent för att fortsätta...");
+                Console.ReadKey();
+            }
         }
 
-        // Visar alla produkter som finns i "databasen"
+        // Visar alla produkter som finns i databasen
         private void ShowAllProducts()
         {
             var products = _productFacade.GetAllProducts();
             if (!products.Any())
             {
-                Console.WriteLine("Inga produkter finns i lagret. Dags att shoppa grossist!");
+                Console.WriteLine("Inga produkter finns i lagret.");
                 return;
             }
+            Console.Clear();
+            //Table!
+            Console.WriteLine("{0,-5} {1,-20} {2,-10} {3,-10} {4,-15} {5,-20} {6,-20}", "ID", "Namn", "Pris", "Lager", "Kategori", "Skapad", "Senast uppdaterad");
+            Console.WriteLine(new string('-', 100));
 
             foreach (var product in products)
             {
-                DisplayProduct(product);
+                Console.WriteLine("{0,-5} {1,-20} {2,-10:C} {3,-10} {4,-15} {5,-20} {6,-20}",
+                    product.Id,
+                    product.Name,
+                    product.Price,
+                    product.Stock,
+                    product.Category,
+                    product.DateCreated,
+                    product.DateUpdated);
             }
         }
 
@@ -78,121 +95,142 @@ public class ConsoleMenuHandler
             Console.WriteLine("=== Lägg till ny produkt ===");
 
             Console.Write("Namn: ");
-            string name = Console.ReadLine();
+            string? name = Console.ReadLine();
             if (string.IsNullOrEmpty(name))
             {
                 Console.WriteLine("Ogiltigt namn! Försök igen.");
                 return;
             }
 
+            //Om inget anges sätts priset till 0, vill ha det i databasen som default värde om jag kan lista ut det.
             Console.Write("Pris: ");
-            if (!decimal.TryParse(Console.ReadLine(), out decimal price))
+            var priceInput = Console.ReadLine()?.Replace(',', '.'); // Används för att hantera svenska decimaler
+            decimal? price = null;
+            if (!string.IsNullOrWhiteSpace(priceInput))
             {
-                Console.WriteLine("Ogiltigt pris! Använd punkt istället för komma (lärde mig den hårda vägen)");
-                return;
+                if (!decimal.TryParse(priceInput, out decimal parsedPrice))
+                {
+                    Console.WriteLine("Ogiltigt pris!");
+                    return;
+                }
+                price = parsedPrice;
             }
-
+            // Möjligt att sätta lager till null om inget anges, db har default värde
             Console.Write("Antal i lager: ");
-            if (!int.TryParse(Console.ReadLine(), out int stock))
+            var stockInput = Console.ReadLine();
+            int? stock = null;
+            if (!string.IsNullOrWhiteSpace(stockInput))
             {
-                Console.WriteLine("Ogiltig lagermängd! Hela tal endast (kan inte sälja halva helikoptrar)");
-                return;
+                if (!int.TryParse(stockInput, out int parsedStock))
+                {
+                    Console.WriteLine("Endast heltal.");
+                    return;
+                }
+                stock = parsedStock;
             }
 
+            //Null värde ger misc i databasen med default värde
             Console.Write("Kategori: ");
             var category = Console.ReadLine();
 
             var product = new Product
             {
                 Name = name,
-                Price = (float)price,
+                Price = (float)(price ?? 0), //TODO: Vill att denna ska kunna vara null om
+                                             //inget pris anges för att reducera mängden kod(databasen har ett default värde)
+                                             //Kanske flytta var casten händer?
                 Stock = stock,
                 Category = category,
             };
 
             _productFacade.AddProduct(product);
-            Console.WriteLine("Produkt tillagd! Glöm inte att hålla datorn igång!");
+            Console.WriteLine("Produkt tillagd!");
         }
 
         // Uppdaterar en befintlig produkt
         private void UpdateProduct()
         {
-            Console.Write("Ange produkt-ID att uppdatera (finns i listan ovan): ");
+            ShowAllProducts();
+            Console.Write("Ange produkt-ID att uppdatera: ");
             if (!int.TryParse(Console.ReadLine(), out int id))
             {
-                Console.WriteLine("Ogiltigt ID! Bara siffror tack!");
+                Console.WriteLine("Ogiltigt ID!");
                 return;
             }
 
             var product = _productFacade.GetProductById(id);
             if (product == null)
             {
-                Console.WriteLine("Produkt hittades inte! Är du säker på att du skrev rätt?");
+                Console.WriteLine("Produkt hittades inte!");
                 return;
             }
 
-            Console.Write("Nytt namn (tryck bara enter om du vill behålla det gamla): ");
+            Console.Write("Nytt namn eller tryck Enter för att behålla gamla: ");
             var name = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(name))
                 product.Name = name;
 
-            Console.Write("Nytt pris (tryck bara enter om du vill behålla det gamla): ");
-            var priceInput = Console.ReadLine();
+            Console.Write("Nytt pris eller tryck Enter för att behålla gamla: ");
+            var priceInput = Console.ReadLine()?.Replace(',', '.');
             if (!string.IsNullOrWhiteSpace(priceInput) && decimal.TryParse(priceInput, out decimal price))
                 product.Price = (float)price;
 
-            Console.Write("Ny lagermängd (tryck bara enter om du vill behålla den gamla): ");
+            Console.Write("Ny lagermängd eller tryck Enter för att behålla gamla: ");
             var stockInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(stockInput) && int.TryParse(stockInput, out int stock))
                 product.Stock = stock;
 
-            Console.Write("Ny kategori (tryck bara enter om du vill behålla den gamla): ");
+            Console.Write("Ny kategori eller tryck Enter för att behålla gamla: ");
             var category = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(category))
                 product.Category = category;
 
 
-            Console.WriteLine("Produkt uppdaterad! Stäng fortfarande inte av datorn!");
+            Console.WriteLine("Produkt uppdaterad!");
         }
 
-        // Ta bort en produkt (använd med försiktighet!)
+        // Ta bort en produkt
         private void DeleteProduct()
         {
-            Console.Write("Ange produkt-ID att ta bort (dubbel-check att det är rätt, går inte att ångra!): ");
+            ShowAllProducts();
+            Console.Write("Ange produkt-ID att tabort: ");
             if (!int.TryParse(Console.ReadLine(), out int id))
             {
-                Console.WriteLine("Ogiltigt ID! Bara siffror är tillåtna här.");
+                Console.WriteLine("Ogiltigt ID!");
                 return;
             }
 
             var product = _productFacade.GetProductById(id);
             if (product == null)
             {
-                Console.WriteLine("Produkt hittades inte! Puh, inget blev raderat av misstag!");
+                Console.WriteLine("Produkt hittades inte!");
                 return;
             }
 
             _productFacade.RemoveProduct(product);
-            Console.WriteLine("Produkt borttagen! (Hoppas det var meningen)");
+            Console.WriteLine("Produkt borttagen!");
         }
 
-        // Sökfunktion - Min stolthet! Söker i både namn och kategori
+        // Sökfunktion
         private void SearchProducts()
         {
-            Console.Write("Sök (namn eller kategori - versaler spelar ingen roll!): ");
-            var searchTerm = Console.ReadLine().ToLower();
+            Console.Write("Sök på namn eller kategori: ");
+            string? searchTerm = Console.ReadLine()?.ToLower();
+
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                Console.WriteLine("Ogiltigt sökterm!");
+                return;
+            }
 
             var results = _productFacade.SearchProducts(searchTerm).ToList();
             if (!results.Any())
             {
-                Console.WriteLine("Inga produkter matchade sökningen. Prova med något annat!");
+                Console.WriteLine("Inga produkter matchade sökningen.");
                 return;
             }
 
-            foreach (var product in results)
-            {
-                DisplayProduct(product);
-            }
+            results.ForEach(DisplayProduct);
         }
 
         // Visar en enskild produkt snyggt formaterat
@@ -204,7 +242,7 @@ public class ConsoleMenuHandler
             Console.WriteLine($"Lager: {product.Stock}");
             Console.WriteLine($"Kategori: {product.Category}");
             Console.WriteLine($"Skapad: {product.DateCreated}");
-            Console.WriteLine($"Senast uppdaterad: {product.LastUpdated}");
+            Console.WriteLine($"Senast uppdaterad: {product.DateUpdated}");
             Console.WriteLine(new string('-', 40));
         }
     }

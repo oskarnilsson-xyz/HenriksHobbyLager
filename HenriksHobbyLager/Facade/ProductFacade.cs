@@ -1,8 +1,8 @@
 using HenriksHobbyLager.Interfaces;
-using System;
-using System.Collections.Generic;
+using HenriksHobbyLager.Models;
 
-namespace HenriksHobbyLager.Models
+
+namespace HenriksHobbyLager.Facade
 {
     public class ProductFacade : IProductFacade
     {
