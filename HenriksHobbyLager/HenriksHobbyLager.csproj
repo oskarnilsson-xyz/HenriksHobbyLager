@@ -12,9 +12,10 @@
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Database\" />
+		<None Update="ReadMe.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
-
 
 
 </Project>

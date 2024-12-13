@@ -19,7 +19,6 @@ Repository och Facade pattern såklart. Men även Dependency Injection genom con
 Template pattern används i ProductFacade skapa ramverk till andra klasser att använda.
 ## Vilka tekniska utmaningar stötte ni på och hur löste ni dem?
 Det svåraste för mig var att fatta hur DB skapandet och initierandet funkade, visade sig mest vara en tanke vurpa men det är vad som tog mest tid.
-Dependency Injection var också en utmaning, är inte helt van vid att hålla alla bollar i luften som blir med interfaces och patterns.
 ## Hur planerade du ditt arbete?
 Jag följde inte riktigt backloggen, för mitt sätt att tänka var det viktigt att få till ProductRepository så att jag fick en bättre bild av
 hur programmet skulle aggera med och mot databasen. 
@@ -29,7 +28,10 @@ Därefter så gjorde jag en stor refactoring av ConsoleMenuHandler för att uppn
 data från programmet som tuffar på Henriks dator.
 Slutligen så gjorde jag en sista genomgång av all kod, kommenterade TODOs som jag hade gjort om jag skulle lägga ännu mer tid.
 ## Vilka dela gjorde du?
-
+Allt, delvis hjälpt av Copilot, men det är ofta den ger någon som man sedan behöver läsa på om och göra om själv. Men det är ändå rätt bra.
 ## Vilka utmaningar stötte du på och hur löste du dem?
-
+Dependency Injection var en utmaning, är inte helt van vid att hålla alla bollar i luften som blir med interfaces och patterns. Det är också
+svårt tykcer jag när man får någon annans projekt att sätta sig in i, det lossnar alltid men kan kännas överväldigande.
 ## Vad skulle du göra annorlunda nästa gång?
+Nu när jag har bättre koll på hur patterns och interfaces kan användas hade jag nog börjat med att göra om projektstrukturen mer gediget från
+början hade nog reducerat lite av den refactoring jag var tvungen att göra.
