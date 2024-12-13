@@ -21,15 +21,16 @@ public class ProductService : IProductService
         if (!products.Any())
         {
             _displayService.DisplayMessage("Inga produkter finns i lagret.");
-            return; //Potential för att tabort en return med if else
         }
-        //Table!
-        _displayService.DisplayMessage("{0,-5} {1,-20} {2,-10} {3,-10} {4,-15} {5,-20} {6,-20}", "ID", "Namn", "Pris", "Lager", "Kategori", "Skapad", "Senast uppdaterad");
-        _displayService.DisplayMessage(new string('-', 100));
-
-        foreach (var product in products)
+        else
         {
-            _displayService.DisplayProduct(product);
+            //Table!
+            _displayService.DrawTable("{0,-5} {1,-20} {2,-10} {3,-10} {4,-15} {5,-20} {6,-20}", "ID", "Namn", "Pris", "Lager", "Kategori", "Skapad", "Senast uppdaterad");
+            _displayService.DisplayMessage(new string('-', 100));
+            foreach (var product in products)
+            {
+                _displayService.DisplayProduct(product);
+            }
         }
     }
     // Lägger till en ny produkt i systemet
@@ -174,19 +175,19 @@ public class ProductService : IProductService
     //Extraordinärt mkt i denna funktion är Copilot genererat.
     public List<Product> ImportFromOldProgram()
     {
-        _displayService.DisplayMessage("Klistra in innehållet från visa allt och tryck Enter:");
-        var dataImport = _inputHandler.ReadLine(); //läs en textfil med datan
+
         var products = new List<Product>();
-        var productBlocks = dataImport.Split(new string[] { "----------------------------------------" }, StringSplitOptions.RemoveEmptyEntries);
+
+        var productBlocks = _inputHandler.ReadFile();
 
         foreach (var block in productBlocks)
         {
             var product = new Product { Name = string.Empty }; // Fixar så att det inte blir null exception
-            var lines = block.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = block.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var line in lines)
             {
-                var parts = line.Split(new[] { ':' }, 2);
+                var parts = line.Split([':'], 2);
                 if (parts.Length < 2) continue;
 
                 var key = parts[0].Trim();

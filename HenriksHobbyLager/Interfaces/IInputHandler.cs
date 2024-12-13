@@ -1,5 +1,6 @@
 ﻿public interface IInputHandler
 {
-    string ReadLine();
+    string? ReadLine();
     void ReadKey();
+    IEnumerable<string> ReadFile();
 }

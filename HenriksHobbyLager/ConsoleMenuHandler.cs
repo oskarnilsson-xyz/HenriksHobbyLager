@@ -1,23 +1,21 @@
-﻿
-using HenriksHobbyLager.Interfaces;
-using HenriksHobbyLager.Models;
-using System.Globalization;
-
-
-
-//Det finns nog mkt kod  att optimera i funktionerna där Console.ReadLine() används + Flytta ut funktioner till andra klasser
-namespace HenriksHobbyLager
+﻿namespace HenriksHobbyLager
 {
 
-    public class ConsoleMenuHandler(IProductFacade productFacade)
+    public class ConsoleMenuHandler
     {
-        private readonly IProductFacade _productFacade = productFacade ?? throw new ArgumentNullException(nameof(productFacade));
+
+        private readonly IProductService _productService;
+
+        public ConsoleMenuHandler(IProductService productService)
+        {
+
+            _productService = productService ?? throw new ArgumentNullException(nameof(productService));
+        }
 
         public void Navigation()
         {
             while (true)
             {
-
                 Console.Clear();
                 Console.WriteLine("=== Henriks HobbyLager™ 2.0 ===");
                 Console.WriteLine("1. Visa alla produkter");
@@ -28,30 +26,27 @@ namespace HenriksHobbyLager
                 Console.WriteLine("6. Avsluta");
                 Console.WriteLine("\n0. Import från Henriks HobbyLager™ 1.0");
 
-
-
-
                 switch (Console.ReadLine())
                 {
                     case "1":
-                        ShowAllProducts();
+                        _productService.ShowAllProducts();
                         break;
                     case "2":
-                        AddProduct();
+                        _productService.AddProduct();
                         break;
                     case "3":
-                        UpdateProduct();
+                        _productService.UpdateProduct();
                         break;
                     case "4":
-                        DeleteProduct();
+                        _productService.DeleteProduct();
                         break;
                     case "5":
-                        SearchProducts();
+                        _productService.SearchProducts();
                         break;
                     case "6":
                         return;
                     case "0":
-                        ImportFromOldProgram();
+                        _productService.ImportFromOldProgram();
                         break;
                     default:
                         Console.WriteLine("Ogiltigt val!");
@@ -62,8 +57,5 @@ namespace HenriksHobbyLager
                 Console.ReadKey();
             }
         }
-
-
-
     }
 }
