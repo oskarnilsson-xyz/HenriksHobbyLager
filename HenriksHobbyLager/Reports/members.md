@@ -7,7 +7,7 @@
 
 ## Kodare
 
-- 
+- Oskar Nilsson 
 - 
 - 
 - 

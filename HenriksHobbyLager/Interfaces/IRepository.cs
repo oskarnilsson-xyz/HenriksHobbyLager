@@ -12,5 +12,6 @@
         void Update(T entity);
         void Delete(int id);
         IEnumerable<T> Search(Func<T, bool> predicate);
+        void InitDatabase(string connectionString);
     }
 }

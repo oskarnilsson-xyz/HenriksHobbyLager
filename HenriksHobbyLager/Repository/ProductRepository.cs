@@ -43,15 +43,14 @@ namespace HenriksHobbyLager.Repository
                         WHERE id = OLD.id;
                     END;
                 ";
-                command.ExecuteNonQuery();
+                command.ExecuteNonQuery(); //TODO: Kolla date för att få klockslag också
             }
 
 
-            if (File.Exists(new SqliteConnectionStringBuilder(connectionString).DataSource)) //Omvandra conectionsString till en path
+            if (File.Exists(new SqliteConnectionStringBuilder(connectionString).DataSource)) //Omvandla conectionsString till en path
             {
                 Console.WriteLine("Databas hittad!");
                 Thread.Sleep(2000);
-                return;
             }
             else
             {
@@ -68,7 +67,22 @@ namespace HenriksHobbyLager.Repository
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
+                //Kolla om produkten redan finns innan vi lägger till Borde kanske vara en try catch.
+                var checkCommand = connection.CreateCommand();
+                checkCommand.CommandText =
+                @"
+                SELECT COUNT(*)
+                FROM Lager
+                WHERE name = $name
+                ";
+                checkCommand.Parameters.AddWithValue("$name", entity.Name);
 
+                var count = (long)checkCommand.ExecuteScalar();
+                if (count > 0)
+                {
+                    Console.WriteLine($"\n{entity.Name} finns redan, hoppar över.");
+                    return;
+                }
                 var command = connection.CreateCommand();
                 command.CommandText =
                 @"
@@ -79,7 +93,6 @@ namespace HenriksHobbyLager.Repository
                 command.Parameters.AddWithValue("$price", entity.Price != 0 ? entity.Price : DBNull.Value);
                 command.Parameters.AddWithValue("$stock", entity.Stock ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$category", entity.Category ?? (object)DBNull.Value);
-
                 command.ExecuteNonQuery();
             }
         }
@@ -104,8 +117,6 @@ namespace HenriksHobbyLager.Repository
         {
             using (var connection = new SqliteConnection(_connectionString))
             {
-
-
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText =
@@ -161,9 +172,13 @@ namespace HenriksHobbyLager.Repository
                             DateUpdated = reader.GetDateTime(6).ToString("yyyy-MM-dd HH:mm:ss")
                         };
                     }
+                    else
+                    {
+                        return null; //TODO: Fixa null varning
+                    }
                 }
+
             }
-            return null;
         }
 
         public IEnumerable<Product> Search(Func<Product, bool> predicate)
