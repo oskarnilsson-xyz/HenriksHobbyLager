@@ -7,11 +7,15 @@
     <Nullable>enable</Nullable>
     <RootNamespace>HenriksHobbyLager</RootNamespace>
   </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="EntityFramework" Version="6.5.1" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="ReadMe.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="Database\dummy.md" />
-    <Compile Include="Interfaces\dummy.md" />
-    <Compile Include="Models\dummy.md" />
-  </ItemGroup>
 
 </Project>
