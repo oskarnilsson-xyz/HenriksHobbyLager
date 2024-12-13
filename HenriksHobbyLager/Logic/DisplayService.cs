@@ -2,6 +2,8 @@
 
 public class DisplayService : IDisplayService
 {
+    // Visar en enskild produkt -- Kolla på hur många svar och välj tabell om det är många
+
     public void DisplayProduct(Product product)
     {
         Console.WriteLine($"\nID: {product.Id}");

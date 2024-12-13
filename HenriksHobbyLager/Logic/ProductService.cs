@@ -21,9 +21,9 @@ public class ProductService : IProductService
         if (!products.Any())
         {
             _displayService.DisplayMessage("Inga produkter finns i lagret.");
-            return;
+            return; //Potential för att tabort en return med if else
         }
-
+        //Table!
         _displayService.DisplayMessage("{0,-5} {1,-20} {2,-10} {3,-10} {4,-15} {5,-20} {6,-20}", "ID", "Namn", "Pris", "Lager", "Kategori", "Skapad", "Senast uppdaterad");
         _displayService.DisplayMessage(new string('-', 100));
 
@@ -32,22 +32,22 @@ public class ProductService : IProductService
             _displayService.DisplayProduct(product);
         }
     }
-
+    // Lägger till en ny produkt i systemet
     public void AddProduct()
     {
         _displayService.DisplayMessage("=== Lägg till ny produkt ===");
 
-        _displayService.DisplayMessage("Namn: ");
+        _displayService.DisplayMessage("Namn: ");// Kan plocka ut Write/Read till en egen funktion för att reducera kod.
         string? name = _inputHandler.ReadLine();
         if (string.IsNullOrEmpty(name))
         {
             _displayService.DisplayMessage("Ogiltigt namn! Försök igen.");
             return;
         }
-
+        //Om inget anges sätts priset till 0, vill ha det i databasen som default värde om jag kan lista ut det.
         _displayService.DisplayMessage("Pris: ");
-        var priceInput = _inputHandler.ReadLine()?.Replace(',', '.');
-        decimal? price = null;
+        var priceInput = _inputHandler.ReadLine()?.Replace(',', '.'); // Används för att hantera svenska decimaler
+        decimal? price = null;//---Kan vi byta till float?--- Tillåt null för att priset inte ska "få vara 0"
         if (!string.IsNullOrWhiteSpace(priceInput))
         {
             if (!decimal.TryParse(priceInput, out decimal parsedPrice))
@@ -57,7 +57,7 @@ public class ProductService : IProductService
             }
             price = parsedPrice;
         }
-
+        // Möjligt att sätta lager till null om inget anges, db har default värde
         _displayService.DisplayMessage("Antal i lager: ");
         var stockInput = _inputHandler.ReadLine();
         int? stock = null;
@@ -73,8 +73,11 @@ public class ProductService : IProductService
 
         _displayService.DisplayMessage("Kategori: ");
         var category = _inputHandler.ReadLine();
-
+        //Null värde ger misc i databasen med default värde
         var product = new Product
+        //TODO: Vill att denna ska kunna vara null om
+        //inget pris anges för att reducera mängden kod(databasen har ett default värde)
+        //Kanske flytta var casten händer?
         {
             Name = name,
             Price = (float)(price ?? 0),
@@ -85,7 +88,7 @@ public class ProductService : IProductService
         _productFacade.AddProduct(product);
         _displayService.DisplayMessage("Produkt tillagd!");
     }
-
+    // Uppdaterar en befintlig produkt Funkar inte pga det skickas aldrig till databasen
     public void UpdateProduct()
     {
         ShowAllProducts();
@@ -126,18 +129,18 @@ public class ProductService : IProductService
         _productFacade.UpdateProduct(product);
         _displayService.DisplayMessage("Produkt uppdaterad!");
     }
-
+    // Ta bort en produkt
     public void DeleteProduct()
     {
         ShowAllProducts();
         _displayService.DisplayMessage("Ange produkt-ID att tabort: ");
-        if (!int.TryParse(_inputHandler.ReadLine(), out int id))
+        if (!int.TryParse(_inputHandler.ReadLine(), out int id)) //Baka ihop med update i egen funktion 
         {
             _displayService.DisplayMessage("Ogiltigt ID!");
             return;
         }
 
-        var product = _productFacade.GetProductById(id);
+        var product = _productFacade.GetProductById(id);//Baka ihop med update i egen funktion 
         if (product == null)
         {
             _displayService.DisplayMessage("Produkt hittades inte!");
@@ -147,7 +150,7 @@ public class ProductService : IProductService
         _productFacade.RemoveProduct(product);
         _displayService.DisplayMessage("Produkt borttagen!");
     }
-
+    // Sökfunktion
     public void SearchProducts()
     {
         _displayService.DisplayMessage("Sök på namn eller kategori: ");
@@ -168,17 +171,17 @@ public class ProductService : IProductService
 
         results.ForEach(_displayService.DisplayProduct);
     }
-
+    //Extraordinärt mkt i denna funktion är Copilot genererat.
     public List<Product> ImportFromOldProgram()
     {
         _displayService.DisplayMessage("Klistra in innehållet från visa allt och tryck Enter:");
-        var dataImport = _inputHandler.ReadLine();
+        var dataImport = _inputHandler.ReadLine(); //läs en textfil med datan
         var products = new List<Product>();
         var productBlocks = dataImport.Split(new string[] { "----------------------------------------" }, StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var block in productBlocks)
         {
-            var product = new Product { Name = string.Empty };
+            var product = new Product { Name = string.Empty }; // Fixar så att det inte blir null exception
             var lines = block.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var line in lines)
