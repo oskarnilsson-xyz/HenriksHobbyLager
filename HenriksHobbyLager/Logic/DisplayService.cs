@@ -2,7 +2,6 @@
 
 public class DisplayService : IDisplayService
 {
-
     // Visar en enskild produkt -- Potentiell Feature: Kolla på hur många svar och välj tabell om det är många
 
     public void DisplayProduct(Product product)
@@ -25,9 +24,21 @@ public class DisplayService : IDisplayService
         }
         Console.WriteLine(message);
     }
-
-    public void DrawTable(string v1, string v2, string v3, string v4, string v5, string v6, string v7, string v8)
+    //Gör table i konsolen
+    public void DrawTable(IEnumerable<Product> products)
     {
-        Console.WriteLine(v1, v2, v3, v4, v5, v6, v7, v8);
+        var headers = new[] { "ID", "Namn", "Pris", "Lager", "Kategori", "Skapad", "Senast uppdaterad" };
+        var table = products.Select(p => new object[]
+        {
+            p.Id, p.Name, p.Price, p.Stock, p.Category, p.DateCreated, p.DateUpdated
+        }).ToList();
+
+        Console.WriteLine("{0,-5} {1,-20} {2,-10} {3,-10} {4,-15} {5,-20} {6,-20}", headers);
+        Console.WriteLine(new string('-', 100));
+
+        foreach (var row in table)
+        {
+            Console.WriteLine("{0,-5} {1,-20} {2,-10:C} {3,-10} {4,-15} {5,-20} {6,-20}", row);
+        }
     }
 }

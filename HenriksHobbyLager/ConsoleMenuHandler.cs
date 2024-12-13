@@ -14,7 +14,6 @@
 
         public void Navigation()
         {
-            InitDatabase(_connectionString);
             while (true)
             {
                 Console.Clear();
@@ -56,11 +55,6 @@
                 Console.WriteLine("\nTryck på valfri tangent för att fortsätta...");
                 Console.ReadKey();
             }
-        }
-
-        private void InitDatabase(string connectionString)
-        {
-            // Implementation for initializing the database
         }
     }
 }

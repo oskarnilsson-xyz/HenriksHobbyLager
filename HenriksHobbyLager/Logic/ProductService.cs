@@ -3,12 +3,12 @@ using HenriksHobbyLager.Models;
 using System.Globalization;
 
 public class ProductService : IProductService
-{
+{   //Låt productservice anropa metoder
     private readonly IProductFacade _productFacade;
     private readonly IInputHandler _inputHandler;
     private readonly IDisplayService _displayService;
 
-    public ProductService(IProductFacade productFacade, IInputHandler inputHandler, IDisplayService displayService)
+    public ProductService(IProductFacade productFacade, IInputHandler inputHandler, IDisplayService displayService) //DI initiering
     {
         _productFacade = productFacade;
         _inputHandler = inputHandler;
@@ -24,13 +24,7 @@ public class ProductService : IProductService
         }
         else
         {
-            //Table!
-            _displayService.DrawTable("{0,-5} {1,-20} {2,-10} {3,-10} {4,-15} {5,-20} {6,-20}", "ID", "Namn", "Pris", "Lager", "Kategori", "Skapad", "Senast uppdaterad");
-            _displayService.DisplayMessage(new string('-', 100));
-            foreach (var product in products)
-            {
-                _displayService.DisplayProduct(product);
-            }
+            _displayService.DrawTable(products);
         }
     }
     // Lägger till en ny produkt i systemet
@@ -171,7 +165,7 @@ public class ProductService : IProductService
         results.ForEach(_displayService.DisplayProduct);
     }
     //Extraordinärt mkt i denna funktion är Copilot genererat.
-    public List<Product> ImportFromOldProgram()
+    public void ImportFromOldProgram()
     {
 
         var products = new List<Product>();
@@ -194,13 +188,13 @@ public class ProductService : IProductService
                 switch (key)
                 {
                     case "ID":
-                        product.Id = int.Parse(value);
+                        //product.Id = int.Parse(value);
                         break;
                     case "Namn":
                         product.Name = value;
                         break;
                     case "Pris":
-                        product.Price = float.Parse(value.Replace("kr", "").Trim(), CultureInfo.InvariantCulture);
+                        product.Price = float.Parse(value.Replace("kr", "").Trim(), CultureInfo.InvariantCulture); //Culture fixar decimal problem
                         break;
                     case "Lager":
                         product.Stock = int.Parse(value);
@@ -209,17 +203,21 @@ public class ProductService : IProductService
                         product.Category = value;
                         break;
                     case "Skapad":
-                        product.DateCreated = value;
+                        //product.DateCreated = value;
                         break;
                     case "Senast uppdaterad":
-                        product.DateUpdated = value;
+                        //product.DateUpdated = value;
                         break;
                 }
             }
 
             products.Add(product);
         }
-
-        return products;
+        foreach (var product in products)
+        {
+            Console.Write($"{product.Name} läggs till.");
+            _productFacade.AddProduct(product);
+        }
+        Console.WriteLine("\n\nAlla produkter tillagda!");
     }
 }

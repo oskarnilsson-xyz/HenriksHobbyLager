@@ -7,5 +7,5 @@ public interface IProductService
     void UpdateProduct();
     void DeleteProduct();
     void SearchProducts();
-    List<Product> ImportFromOldProgram();
+    void ImportFromOldProgram();
 }

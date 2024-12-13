@@ -67,6 +67,22 @@ namespace HenriksHobbyLager.Repository
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
+                //Kolla om produkten redan finns innan vi lägger till Borde kanske vara en try catch.
+                var checkCommand = connection.CreateCommand();
+                checkCommand.CommandText =
+                @"
+                SELECT COUNT(*)
+                FROM Lager
+                WHERE name = $name
+                ";
+                checkCommand.Parameters.AddWithValue("$name", entity.Name);
+
+                var count = (long)checkCommand.ExecuteScalar();
+                if (count > 0)
+                {
+                    Console.WriteLine($"\n{entity.Name} finns redan, hoppar över.");
+                    return;
+                }
                 var command = connection.CreateCommand();
                 command.CommandText =
                 @"

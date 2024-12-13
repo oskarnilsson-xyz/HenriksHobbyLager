@@ -1,4 +1,4 @@
-﻿
+﻿//Oklart om det är bra eller dåligt att ha console reads här och om bra borde alla writelines också gå genom denna
 namespace HenriksHobbyLager.Logic
 {
 
@@ -27,7 +27,7 @@ namespace HenriksHobbyLager.Logic
         public IEnumerable<string> ReadFile()
         {
             _displayService?.DisplayMessage("Ange absolut path till .txt filen");
-            var inputFilePath = _inputHandler.ReadLine();
+            var inputFilePath = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(inputFilePath))
             {
