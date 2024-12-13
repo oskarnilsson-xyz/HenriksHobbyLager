@@ -4,14 +4,17 @@
     public class ConsoleMenuHandler
     {
         private readonly IProductService _productService;
+        private readonly string _connectionString;
 
-        public ConsoleMenuHandler(IProductService productService)
+        public ConsoleMenuHandler(IProductService productService, string connectionString)
         {
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
+            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
         public void Navigation()
         {
+            InitDatabase(_connectionString);
             while (true)
             {
                 Console.Clear();
@@ -22,7 +25,7 @@
                 Console.WriteLine("4. Ta bort produkt");
                 Console.WriteLine("5. Sök produkter");
                 Console.WriteLine("6. Avsluta");
-                Console.WriteLine("\n0. Import från Henriks HobbyLager™ 1.0");
+                Console.WriteLine("\n0. Import från Henriks HobbyLager™ 1.0"); //TODO: Ta bort denna vid nästa release när den är använd.
 
                 switch (Console.ReadLine())
                 {
@@ -53,6 +56,11 @@
                 Console.WriteLine("\nTryck på valfri tangent för att fortsätta...");
                 Console.ReadKey();
             }
+        }
+
+        private void InitDatabase(string connectionString)
+        {
+            // Implementation for initializing the database
         }
     }
 }

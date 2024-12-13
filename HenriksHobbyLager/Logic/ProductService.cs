@@ -34,6 +34,7 @@ public class ProductService : IProductService
         }
     }
     // Lägger till en ny produkt i systemet
+    //TODO: Skapa en helper funktion för null/empty checks
     public void AddProduct()
     {
         _displayService.DisplayMessage("=== Lägg till ny produkt ===");

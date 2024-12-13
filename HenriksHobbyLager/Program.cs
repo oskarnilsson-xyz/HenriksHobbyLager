@@ -16,8 +16,9 @@ namespace HenriksHobbyLager
             IInputHandler inputHandler = new InputHandler(displayService, new InputHandler(displayService, null)); //TODO: Fixa null varning
             IProductService productService = new ProductService(productFacade, inputHandler, displayService);
 
+
             // Initiera och calla meny
-            var consoleMenuHandler = new ConsoleMenuHandler(productService);
+            var consoleMenuHandler = new ConsoleMenuHandler(productService, connectionString);
             consoleMenuHandler.Navigation();
         }
     }
