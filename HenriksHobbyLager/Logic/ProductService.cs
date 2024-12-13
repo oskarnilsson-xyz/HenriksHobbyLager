@@ -38,7 +38,7 @@ public class ProductService : IProductService
     {
         _displayService.DisplayMessage("=== Lägg till ny produkt ===");
 
-        _displayService.DisplayMessage("Namn: ");// Kan plocka ut Write/Read till en egen funktion för att reducera kod.
+        _displayService.DisplayMessage("Namn: ");
         string? name = _inputHandler.ReadLine();
         if (string.IsNullOrEmpty(name))
         {
@@ -48,7 +48,7 @@ public class ProductService : IProductService
         //Om inget anges sätts priset till 0, vill ha det i databasen som default värde om jag kan lista ut det.
         _displayService.DisplayMessage("Pris: ");
         var priceInput = _inputHandler.ReadLine()?.Replace(',', '.'); // Används för att hantera svenska decimaler
-        decimal? price = null;//---Kan vi byta till float?--- Tillåt null för att priset inte ska "få vara 0"
+        decimal? price = null;//TODO: ---Kan vi byta till float?--- Tillåt null för att priset inte ska "få vara 0"
         if (!string.IsNullOrWhiteSpace(priceInput))
         {
             if (!decimal.TryParse(priceInput, out decimal parsedPrice))
@@ -73,17 +73,14 @@ public class ProductService : IProductService
         }
 
         _displayService.DisplayMessage("Kategori: ");
-        var category = _inputHandler.ReadLine();
-        //Null värde ger misc i databasen med default värde
+        var category = _inputHandler.ReadLine();         //Null värde ger misc i databasen med default värde
+
         var product = new Product
-        //TODO: Vill att denna ska kunna vara null om
-        //inget pris anges för att reducera mängden kod(databasen har ett default värde)
-        //Kanske flytta var casten händer?
         {
             Name = name,
-            Price = (float)(price ?? 0),
-            Stock = stock,
-            Category = category,
+            Price = (float)(price ?? 0),        //TODO: Vill att denna ska kunna vara null om
+            Stock = stock,                      //inget pris anges för att reducera mängden kod(databasen har ett default värde)
+            Category = category,                //Kanske flytta var casten händer?
         };
 
         _productFacade.AddProduct(product);
@@ -135,13 +132,13 @@ public class ProductService : IProductService
     {
         ShowAllProducts();
         _displayService.DisplayMessage("Ange produkt-ID att tabort: ");
-        if (!int.TryParse(_inputHandler.ReadLine(), out int id)) //Baka ihop med update i egen funktion 
+        if (!int.TryParse(_inputHandler.ReadLine(), out int id)) //TODO: Baka ihop med update i egen funktion 
         {
             _displayService.DisplayMessage("Ogiltigt ID!");
             return;
         }
 
-        var product = _productFacade.GetProductById(id);//Baka ihop med update i egen funktion 
+        var product = _productFacade.GetProductById(id);//TODO: Baka ihop med update i egen funktion 
         if (product == null)
         {
             _displayService.DisplayMessage("Produkt hittades inte!");

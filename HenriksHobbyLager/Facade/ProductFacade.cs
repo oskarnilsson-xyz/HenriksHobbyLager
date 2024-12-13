@@ -8,9 +8,18 @@ namespace HenriksHobbyLager.Facade
     {
         private readonly IRepository<Product> _productRepository;
 
+        public string connectionString { get; }
+
         public ProductFacade(IRepository<Product> productRepository)
         {
             _productRepository = productRepository;
+            connectionString = string.Empty;
+        }
+
+        public ProductFacade(string connectionString) //TODO: Fixa denna null varning
+        {
+
+            this.connectionString = connectionString;
         }
 
         public void AddProduct(Product product)

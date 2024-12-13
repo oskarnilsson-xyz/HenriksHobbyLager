@@ -5,6 +5,7 @@ namespace HenriksHobbyLager.Interfaces
 {
     public interface IProductFacade
     {
+        string connectionString { get; }
         void AddProduct(Product product);
         void RemoveProduct(Product product);
         void UpdateProduct(Product product);

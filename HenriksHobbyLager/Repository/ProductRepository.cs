@@ -13,7 +13,6 @@ namespace HenriksHobbyLager.Repository
         }
 
         //Initiera SQLite File Databas och skapa en trigger för att uppdatera dateUpdated
-        //Denna kan inte användas av andra repos!!!
         public void InitDatabase(string connectionString)
         {
             using (var connection = new SqliteConnection(connectionString))
@@ -48,7 +47,7 @@ namespace HenriksHobbyLager.Repository
             }
 
 
-            if (File.Exists(new SqliteConnectionStringBuilder(connectionString).DataSource)) //Omvandra conectionsString till en path
+            if (File.Exists(new SqliteConnectionStringBuilder(connectionString).DataSource)) //Omvandla conectionsString till en path
             {
                 Console.WriteLine("Databas hittad!");
                 Thread.Sleep(2000);
@@ -68,7 +67,6 @@ namespace HenriksHobbyLager.Repository
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
-
                 var command = connection.CreateCommand();
                 command.CommandText =
                 @"
@@ -79,7 +77,6 @@ namespace HenriksHobbyLager.Repository
                 command.Parameters.AddWithValue("$price", entity.Price != 0 ? entity.Price : DBNull.Value);
                 command.Parameters.AddWithValue("$stock", entity.Stock ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$category", entity.Category ?? (object)DBNull.Value);
-
                 command.ExecuteNonQuery();
             }
         }
@@ -104,8 +101,6 @@ namespace HenriksHobbyLager.Repository
         {
             using (var connection = new SqliteConnection(_connectionString))
             {
-
-
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText =
@@ -163,14 +158,14 @@ namespace HenriksHobbyLager.Repository
                     }
                     else
                     {
-                        return null;
+                        return null; //TODO: Fixa null varning
                     }
                 }
 
             }
         }
 
-        public IEnumerable<Product> Search(Func<Product, bool> predicate)  //kolla mer på hur detta funkar
+        public IEnumerable<Product> Search(Func<Product, bool> predicate)
         {
             return GetAll().Where(predicate);
         }

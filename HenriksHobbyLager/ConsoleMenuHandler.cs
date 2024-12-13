@@ -3,12 +3,10 @@
 
     public class ConsoleMenuHandler
     {
-
         private readonly IProductService _productService;
 
         public ConsoleMenuHandler(IProductService productService)
         {
-
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
         }
 
@@ -52,7 +50,6 @@
                         Console.WriteLine("Ogiltigt val!");
                         break;
                 }
-
                 Console.WriteLine("\nTryck på valfri tangent för att fortsätta...");
                 Console.ReadKey();
             }
